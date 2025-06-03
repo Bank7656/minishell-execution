@@ -10,6 +10,7 @@
 
 #include <unistd.h>
 #include <stdio.h>
+#include <stdbool.h>
 #include <stdlib.h>
 
 typedef struct s_pipex
@@ -27,5 +28,14 @@ typedef struct s_pipex
 	char	**env_path;
 	pid_t	*parent_pid;
 }	t_pipex;
+
+typedef struct s_exec
+{
+	char	*command_path;
+  char  **cmds_arg;
+  char  **envp;
+  bool  is_pipe;
+  
+} t_exec;
 
 #endif
