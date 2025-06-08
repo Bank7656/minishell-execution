@@ -1,7 +1,7 @@
 CC = cc
 # CFLAGS = -Wall -Wextra -Werror
 
-SRC := execute.c
+SRC := execute.c redirect.c utils.c
 
 HEADER := execute.h
 HEADER_DIR  := ./

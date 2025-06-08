@@ -1,9 +1,9 @@
 #include "execute.h"
-#include "libft/libft.h"
 
-
-int     is_builtin(char *func_name);
-void  execution(t_exec *data, char **envp);
+int          is_builtin(char *func_name);
+void  redirection(t_exec *data);
+void  create_temp_file(t_exec *data);
+static void  execution(t_exec *data, char **envp);
 t_exec  *get_exec_dummy(char **envp);
 
 int main(int argc, char *argv[], char *envp[])
@@ -17,14 +17,19 @@ int main(int argc, char *argv[], char *envp[])
   return 0;
 }
 
-void  execution(t_exec *data, char  **envp)
+static void  execution(t_exec *data, char  **envp)
 {
+  int     i;
   int     status;
   pid_t   pid; 
 
+  /* This have to have loop for many cmds */
+  if (data -> is_heredoc)
+    create_temp_file(data);
   pid = fork();
   if (pid == 0)
   {
+    redirection(data);
     if (is_builtin(data->cmds_arg[0]))
     {
       /* For doing builtin function later */
@@ -38,18 +43,18 @@ void  execution(t_exec *data, char  **envp)
       exit(EXIT_FAILURE);
     }
   }
-
   wait(&status);
- 
 }
 
 /* This function create a simple case for execution */
 t_exec  *get_exec_dummy(char **envp)
 { // Path to the binary to execute
-  char *binary_path = "/bin/ls";
+  // char *binary_path = "/bin/ls";
+  char *binary_path = "/bin/cat";
 
   // Arguments for the binary (argv must be NULL-terminated)
-  char *args[] = { "ls", "-l", "/tmp", NULL };
+  //char *args[] = { "ls", "-l", "/tmp", NULL };
+  char *args[] = { "cat", "-e", NULL };
 
   // Environment variables (envp must be NULL-terminated)
   //char *env[] = { "HOME=/home/user", "PATH=/bin:/usr/bin", NULL };
@@ -64,26 +69,39 @@ t_exec  *get_exec_dummy(char **envp)
   for (int i = 0; i < sizeof(args)/sizeof(args[0]); i++)
     data -> cmds_arg[i] = args[i];
   data -> envp = envp;
+  data -> is_pipe = false;
+  data -> is_infile = false;
+  data -> infile = ft_strdup("hello.txt");
+  // data -> is_heredoc = false;
+  data -> is_heredoc = true;
+  data -> end_of_file = ft_strdup("EOF");
   return (data);
 }
 
-
-int     is_builtin(char *func_name)
+void  create_temp_file(t_exec *data)
 {
-  if (ft_strncmp(func_name, "echo", -1) == 0) 
-    return (1);
-  if (ft_strncmp(func_name, "cd", -1) == 0) 
-    return (1);
-  if (ft_strncmp(func_name, "pwd", -1) == 0) 
-    return (1);
-  if (ft_strncmp(func_name, "export", -1) == 0) 
-    return (1);
-  if (ft_strncmp(func_name, "unset", -1) == 0) 
-    return (1);
-  if (ft_strncmp(func_name, "env", -1) == 0) 
-    return (1);
-  if (ft_strncmp(func_name, "exit", -1) == 0) 
-    return (1);
-  return (0);
+    int   temp_fd;
+    char  *line;
+
+    temp_fd = open(TEMP_FILE, O_CREAT | O_WRONLY, 0644);  
+    if (!temp_fd)
+      exit(EXIT_FAILURE);
+    while (true)
+    {
+      ft_putstr_fd("> ", STDOUT_FILENO);
+      line = get_next_line(STDIN_FILENO);
+      if (!line)
+        exit(EXIT_FAILURE);
+      if (ft_strncmp(line, data -> end_of_file, ft_strlen(line) - 1) == 0)
+        break;
+      ft_putstr_fd(line, temp_fd);
+      free(line);
+    }
+    if (dup2(temp_fd, STDIN_FILENO) == -1)
+      exit(EXIT_FAILURE);
+    close(temp_fd);
+    return ;
 }
+
+
 

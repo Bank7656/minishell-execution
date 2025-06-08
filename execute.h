@@ -9,9 +9,11 @@
 # define TEMP_FILE "temp.txt"
 
 #include <unistd.h>
+#include <fcntl.h>
 #include <stdio.h>
 #include <stdbool.h>
 #include <stdlib.h>
+#include "libft/libft.h"
 
 typedef struct s_pipex
 {
@@ -35,7 +37,16 @@ typedef struct s_exec
   char  **cmds_arg;
   char  **envp;
   bool  is_pipe;
+  bool  is_infile;
+  char  *infile;
+  bool  is_heredoc;
+  char  *end_of_file;
+
   
 } t_exec;
+
+
+int     is_builtin(char *func_name);
+void    redirect(void);
 
 #endif
