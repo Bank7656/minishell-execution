@@ -34,17 +34,24 @@ typedef struct s_pipex
 typedef struct s_exec
 {
 	char	*command_path;
-  char  **cmds_arg;
-  char  **envp;
-  bool  is_pipe;
-  bool  is_infile;
-  char  *infile;
-  bool  is_heredoc;
-  char  *end_of_file;
+	char	**cmds_arg;
+	char	**envp;
+
+	
+	bool	is_pipe;
+	bool	is_infile;
+	char	*infile;
+	bool	is_heredoc;
+	char	*end_of_file;
 
   
 } t_exec;
 
+typedef struct s_cmds
+{
+  t_exec        *cmds;
+  struct s_cmds *next;
+} t_cmds;
 
 int     is_builtin(char *func_name);
 void    redirect(void);
